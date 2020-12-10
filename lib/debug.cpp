@@ -175,6 +175,7 @@ static void full_write(int fd, const char *buf, size_t len)
 	}
 }
 
+#ifdef __GLIBC__
 void print_backtrace(void)
 {
 	static const char start[] = "BACKTRACE ------------\n";
@@ -196,6 +197,12 @@ void print_backtrace(void)
 	full_write(STDERR_FILENO, end, strlen(end));
 	free(bt_syms);
 }
+#else
+void print_backtrace(void)
+{
+	full_write(STDERR_FILENO, "Backtrace not available (needs glibc)\n", 1);
+}
+#endif
 
 #ifdef DEBUG
 void init_debug_struct() {	

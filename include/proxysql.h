@@ -44,7 +44,9 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <poll.h>
+#ifdef __GLIBC__
 #include <execinfo.h>
+#endif
 
 #include <dlfcn.h>
 

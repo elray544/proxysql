@@ -81,6 +81,10 @@ LDIRS=-L$(LDIR) -L$(JEMALLOC_LDIR) $(LIBCONFIG_LDIR) -L$(RE2_PATH)/obj -L$(MARIA
 
 UNAME_S := $(shell uname -s)
 
+# -- kludge, select on UNAME_S
+
+LDIRS+= -L/usr/lib
+
 ifeq ($(UNAME_S),Darwin)
 	IDIRS+= -I/usr/local/include -I/usr/local/opt/openssl/include
 	LDIRS+= -L/usr/local/lib
@@ -93,12 +97,12 @@ else
 PSQLCH=
 endif
 
-MYCXXFLAGS=-std=c++11 $(IDIRS) $(OPTZ) $(DEBUG) $(PSQLCH) -DGITVERSION=\"$(GIT_VERSION)\"
+MYCXXFLAGS=-std=c++11 -faligned-new $(IDIRS) $(OPTZ) $(DEBUG) $(PSQLCH) -DGITVERSION=\"$(GIT_VERSION)\"
 
 LDFLAGS+=
 NOJEMALLOC := $(shell echo $(NOJEMALLOC))
 ifeq ($(NOJEMALLOC),1)
-MYLIBS=-Wl,--export-dynamic -Wl,-Bstatic -lconfig -lproxysql -ldaemon -lconfig++ -lre2 -lpcrecpp -lpcre -lmariadbclient -lhttpserver -lmicrohttpd -linjection -lcurl -lssl -lcrypto -lev -Wl,-Bdynamic -lgnutls -lpthread -lm -lz -lrt -lprometheus-cpp-pull -lprometheus-cpp-core $(EXTRALINK)
+MYLIBS=-Wl,--export-dynamic -Wl,-Bstatic -lconfig -lproxysql -ldaemon -lconfig++ -lre2 -lpcrecpp -lpcre -lmariadbclient -lhttpserver -lmicrohttpd -linjection -lev -Wl,-Bdynamic -lssl -lcrypto -lcurl -lgnutls -lpthread -lm -lz -lrt -lprometheus-cpp-pull -lprometheus-cpp-core $(EXTRALINK)
 else
 MYLIBS=-Wl,--export-dynamic -Wl,-Bstatic -lconfig -lproxysql -ldaemon -ljemalloc -lconfig++ -lre2 -lpcrecpp -lpcre -lmariadbclient -lhttpserver -lmicrohttpd -linjection -lcurl -lssl -lcrypto -lev -Wl,-Bdynamic -lgnutls -lpthread -lm -lz -lrt -lprometheus-cpp-pull -lprometheus-cpp-core $(EXTRALINK)
 endif
@@ -125,7 +129,7 @@ ifeq ($(UNAME_S),Darwin)
 	LIBPROXYSQLAR=$(LDIR)/libproxysql.a ../deps/libmicrohttpd/libmicrohttpd/src/microhttpd/.libs/libmicrohttpd.a ../deps/libhttpserver/libhttpserver/build/src/.libs/libhttpserver.a ../deps/pcre/pcre/.libs/libpcre.a ../deps/pcre/pcre/.libs/libpcrecpp.a  ../deps/libdaemon/libdaemon/libdaemon/.libs/libdaemon.a  ../deps/libconfig/libconfig/lib/.libs/libconfig++.a ../deps/libconfig/libconfig/lib/.libs/libconfig.a ../deps/curl/curl/lib/.libs/libcurl.a ../deps/sqlite3/sqlite3/sqlite3.o ../deps/libinjection/libinjection/src/libinjection.a  ../deps/libhttpserver/libhttpserver/build/src/.libs/libhttpserver.a ../deps/libev/libev-4.24/.libs/libev.a
 endif
 
-LIBPROXYSQLAR+= $(SSL_LDIR)/libssl.a $(SSL_LDIR)/libcrypto.a
+#LIBPROXYSQLAR+= $(SSL_LDIR)/libssl.a $(SSL_LDIR)/libcrypto.a
 ODIR= obj
 
 EXECUTABLE=proxysql

@@ -18,9 +18,9 @@ endif
 
 PROXYSQLCLICKHOUSE := $(shell echo $(PROXYSQLCLICKHOUSE))
 ifeq ($(PROXYSQLCLICKHOUSE),1)
-default: libconfig libdaemon jemalloc mariadb_client re2 sqlite3 pcre clickhouse-cpp lz4 cityhash microhttpd curl ev libssl libhttpserver libinjection prometheus-cpp
+default: libinjection libconfig jemalloc mariadb_client re2 sqlite3 pcre clickhouse-cpp lz4 cityhash microhttpd ev libhttpserver prometheus-cpp
 else
-default: libconfig libdaemon jemalloc mariadb_client re2 sqlite3 pcre microhttpd curl ev libssl libhttpserver libinjection prometheus-cpp
+default: libinjection libconfig jemalloc mariadb_client re2 sqlite3 pcre microhttpd ev libhttpserver prometheus-cpp
 endif
 .PHONY: default
 
@@ -28,13 +28,14 @@ endif
 libinjection/libinjection/src/libinjection.a:
 	cd libinjection && rm -rf libinjection-3.10.0 || true
 	cd libinjection && tar -zxf libinjection-3.10.0.tar.gz
-	sed -i -e 's/python/python2/' libinjection/libinjection-3.10.0/src/make_parens.py
-	sed -i -e 's/python/python2/' libinjection/libinjection-3.10.0/src/sqlparse_map.py
-	sed -i -e 's/python/python2/' libinjection/libinjection-3.10.0/src/sqlparse2c.py
+	# -- copy in python 3 versions of these three
+	cp libinjection/make_parens.py libinjection/libinjection-3.10.0/src/make_parens.py
+	cp libinjection/sqlparse_map.py libinjection/libinjection-3.10.0/src/sqlparse_map.py
+	cp libinjection/sqlparse2c.py libinjection/libinjection-3.10.0/src/sqlparse2c.py
 	cd libinjection/libinjection && CC=${CC} CXX=${CXX} ${MAKE}
 libinjection: libinjection/libinjection/src/libinjection.a
 
-libssl/openssl/libssl.a:
+libssl/openssl/xxxxlibssl.a:
 #	cd libssl && rm -rf openssl-1.1.0h || true
 #	cd libssl && tar -zxf openssl-1.1.0h.tar.gz
 	cd libssl && rm -rf openssl-1.1.1d || true
@@ -150,13 +151,14 @@ jemalloc/jemalloc/lib/libjemalloc.a:
 jemalloc: jemalloc/jemalloc/lib/libjemalloc.a
 
 
-mariadb-client-library/mariadb_client/libmariadb/libmariadbclient.a: libssl/openssl/libssl.a
+mariadb-client-library/mariadb_client/libmariadb/libmariadbclient.a:
 	cd mariadb-client-library && rm -rf mariadb-connector-c-3.1.9-src
 	cd mariadb-client-library && tar -zxf mariadb-connector-c-3.1.9-src.tar.gz
 	cd mariadb-client-library/mariadb_client && patch ./plugins/auth/CMakeLists.txt < ../plugin_auth_CMakeLists.txt.patch
 	 cd mariadb-client-library/mariadb_client && patch ./CMakeLists.txt < ../CMakeLists.txt.patch
 #	cd mariadb-client-library/mariadb_client && cmake . -DOPENSSL_ROOT_DIR=$(shell pwd)/libssl/openssl/ -DOPENSSL_LIBRARIES=$(shell pwd)/libssl/openssl/ .
-	cd mariadb-client-library/mariadb_client && cmake . -DCMAKE_BUILD_TYPE=RelWithDebInfo -DOPENSSL_ROOT_DIR=$(shell pwd)/libssl/openssl/ -DOPENSSL_LIBRARIES=$(shell pwd)/libssl/openssl/ .
+#	cd mariadb-client-library/mariadb_client && cmake . -DCMAKE_BUILD_TYPE=RelWithDebInfo -DOPENSSL_ROOT_DIR=$(shell pwd)/libssl/openssl/ -DOPENSSL_LIBRARIES=$(shell pwd)/libssl/openssl/ .
+	cd mariadb-client-library/mariadb_client && cmake . -DCMAKE_BUILD_TYPE=RelWithDebInfo
 #	cd mariadb-client-library/mariadb_client && cmake . -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl # this is needed on MacOSX
 	cd mariadb-client-library/mariadb_client && patch libmariadb/mariadb_stmt.c < ../mariadb_stmt.c.patch
 	cd mariadb-client-library/mariadb_client && patch libmariadb/mariadb_lib.c < ../mariadb_lib.c.patch

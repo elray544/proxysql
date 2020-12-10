@@ -9,6 +9,8 @@ O0=-O0
 O2=-O2
 O1=-O1
 O3=-O3 -mtune=native
+
+AWK=awk
 #OPTZ=$(O2)
 EXTRALINK=#-pg
 ALL_DEBUG=-ggdb -DDEBUG
@@ -20,7 +22,7 @@ DEBUG=${ALL_DEBUG}
 export MAKE
 export CURVER?=2.1.0
 ifneq (,$(wildcard /etc/os-release))
-	DISTRO := $(shell gawk -F= '/^NAME/{print $$2}' /etc/os-release)
+	DISTRO := $(shell $(AWK) -F= '/^NAME/{print $$2}' /etc/os-release)
 else
 	DISTRO := Unknown
 endif
